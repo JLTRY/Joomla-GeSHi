@@ -1,13 +1,15 @@
 <?php
 /**
- * @package     Joomla.Plugin
+	* @package     Joomla.Plugin
  * @subpackage  Content.geshi
  *
- * @copyright   Copyright (C) 2005 - 2012 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
+use Joomla\Utilities\ArrayHelper;
+use Joomla\CMS\Plugin\CMSPlugin;
 
 /**
  * GeSHi Content Plugin
@@ -15,18 +17,19 @@ defined('_JEXEC') or die;
  * @package     Joomla.Plugin
  * @subpackage  Content.geshi
  */
-class plgContentGeshi extends JPlugin
+class plgContentGeshi extends CMSPlugin
 {
 	/**
-	 * @param	string	The context of the content being passed to the plugin.
-	 * @param	object	The article object.  Note $article->text is also available
-	 * @param	object	The article params
-	 * @param	int		The 'page' number
+	 * @param   string	The context of the content being passed to the plugin.
+	 * @param   object	The article object.  Note $article->text is also available
+	 * @param   object	The article params
+	 * @param   integer  The 'page' number
 	 */
 	public function onContentPrepare($context, &$article, &$params, $page = 0)
 	{
 		// Simple performance check to determine whether bot should process further.
-		if (JString::strpos($article->text, 'pre>') === false) {
+		if (strpos($article->text, 'pre>') === false)
+		{
 			return true;
 		}
 
@@ -42,10 +45,10 @@ class plgContentGeshi extends JPlugin
 	/**
 	 * Replaces the matched tags.
 	 *
-	 * @param	array	An array of matches (see preg_match_all)
-	 * @return	string
+	 * @param   array  An array of matches (see preg_match_all)
+	 * @return  string
 	 */
-	protected function _replace(&$matches)
+	protected function _replace($matches)
 	{
 		jimport('joomla.utilities.utility');
 
@@ -54,8 +57,8 @@ class plgContentGeshi extends JPlugin
 		$args = JUtility::parseAttributes($matches[1]);
 		$text = $matches[2];
 
-		$lang = JArrayHelper::getValue($args, 'lang', 'php');
-		$lines = JArrayHelper::getValue($args, 'lines', 'false');
+		$lang = ArrayHelper::getValue($args, 'lang', 'php');
+		$lines = ArrayHelper::getValue($args, 'lines', 'false');
 
 		$html_entities_match = array("|\<br \/\>|", "#<#", "#>#", "|&#39;|", '#&quot;#', '#&nbsp;#');
 		$html_entities_replace = array("\n", '&lt;', '&gt;', "'", '"', ' ');
@@ -66,13 +69,19 @@ class plgContentGeshi extends JPlugin
 		$text = str_replace('&gt;', '>', $text);
 
 		$text = str_replace("\t", '  ', $text);
-
+		
+		$text = ltrim(rtrim( $text ));		
+		
 		$geshi = new GeSHi($text, $lang);
-		if ($lines == 'true') {
+		if ($lines == 'true')
+		{
 			$geshi->enable_line_numbers(GESHI_NORMAL_LINE_NUMBERS);
 		}
-		$text = $geshi->parse_code();
-
+		$geshi->set_header_type(GESHI_HEADER_DIV);
+		$geshi->set_overall_class('mw-geshi');
+		$geshi->set_code_style('font-family:monospace;font-size: 13px;line-height: normal;', true);		
+		$text = $geshi->parse_code();		
+		
 		return $text;
 	}
 }

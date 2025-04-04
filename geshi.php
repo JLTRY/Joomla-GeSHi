@@ -48,7 +48,7 @@ class plgContentGeshi extends CMSPlugin
 	 * @param   array  An array of matches (see preg_match_all)
 	 * @return  string
 	 */
-	protected function _replace(&$matches)
+	protected function _replace($matches)
 	{
 		jimport('joomla.utilities.utility');
 
